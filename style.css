@@ -1,0 +1,300 @@
+@import url('https://fonts.googleapis.com/css2?family=Cairo:wght@400;700&display=swap');
+
+:root {
+    --primary-color: #007bff;
+    --secondary-color: #6c757d;
+    --background-color: #f8f9fa;
+    --card-background: #ffffff;
+    --text-color: #343a40;
+    --border-color: #dee2e6;
+    --success-color: #28a745;
+    --error-color: #dc3545;
+    --rating-color: #ffc107;
+}
+
+.hidden {
+    display: none !important;
+}
+
+body {
+    font-family: 'Cairo', sans-serif;
+    background-color: var(--background-color);
+    color: var(--text-color);
+    direction: rtl;
+    text-align: right;
+    margin: 0;
+    padding: 0;
+}
+
+.container {
+    max-width: 800px;
+    margin: 40px auto;
+    padding: 30px;
+    background: var(--card-background);
+    border-radius: 12px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+}
+
+h1 {
+    color: var(--primary-color);
+    text-align: center;
+    margin-bottom: 20px;
+    font-weight: 700;
+}
+
+.form-group {
+    margin-bottom: 20px;
+}
+
+label {
+    display: block;
+    font-weight: bold;
+    margin-bottom: 8px;
+}
+
+input[type="text"],
+input[type="number"],
+input[type="date"],
+input[type="time"],
+input[type="email"],
+textarea,
+select {
+    width: 100%;
+    padding: 12px;
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    box-sizing: border-box;
+    font-size: 16px;
+    font-family: 'Cairo', sans-serif;
+    transition: border-color 0.3s, box-shadow 0.3s;
+}
+
+input[type="text"]:focus,
+input[type="number"]:focus,
+input[type="date"]:focus,
+input[type="time"]:focus,
+input[type="email"]:focus,
+textarea:focus,
+select:focus {
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.25);
+    outline: none;
+}
+
+input::placeholder,
+textarea::placeholder {
+    color: #adb5bd;
+}
+
+.checkbox-group {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-top: 10px;
+}
+
+.checkbox-group label {
+    font-weight: normal;
+    background-color: #f1f3f5;
+    padding: 10px 15px;
+    border-radius: 20px;
+    cursor: pointer;
+    transition: background-color 0.3s;
+    user-select: none;
+}
+
+.checkbox-group label:hover {
+    background-color: #e9ecef;
+}
+
+.checkbox-group input[type="checkbox"] {
+    display: none;
+}
+
+.checkbox-group input[type="checkbox"]:checked + span {
+    background-color: var(--primary-color);
+    color: #fff;
+    border-color: var(--primary-color);
+    padding: 10px 15px;
+    border-radius: 20px;
+}
+
+.checkbox-group label span {
+    display: inline-block;
+}
+
+#customerDetails {
+    background-color: #e9ecef;
+    border-radius: 8px;
+    padding: 15px;
+    margin-top: 10px;
+    display: none;
+    line-height: 1.6;
+}
+
+#missingProductsContainer {
+    border: 1px dashed var(--border-color);
+    border-radius: 8px;
+    padding: 15px;
+    margin-top: 15px;
+}
+
+.missing-product-item {
+    display: flex;
+    align-items: flex-end;
+    gap: 10px;
+    margin-bottom: 15px;
+    border-bottom: 1px solid #e9ecef;
+    padding-bottom: 15px;
+}
+
+.missing-product-item:last-child {
+    border-bottom: none;
+    margin-bottom: 0;
+    padding-bottom: 0;
+}
+
+.missing-product-item label {
+    margin-bottom: 0;
+}
+
+.missing-product-item select {
+    flex-grow: 1;
+}
+
+.remove-product-btn {
+    background-color: var(--error-color);
+    color: #fff;
+    border: none;
+    border-radius: 50%;
+    width: 38px;
+    height: 38px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background-color 0.3s;
+}
+
+.remove-product-btn:hover {
+    background-color: #c82333;
+}
+
+/* Updated Add Button */
+.btn-add {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    background-color: #007bff;
+    color: #fff;
+    border: none;
+    padding: 12px 20px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 16px;
+    font-weight: bold;
+    transition: background-color 0.3s, box-shadow 0.3s;
+    width: auto;
+    margin-top: 10px;
+}
+
+.btn-add:hover {
+    background-color: #0056b3;
+    box-shadow: 0 4px 10px rgba(0, 123, 255, 0.2);
+}
+
+
+.star-rating {
+    display: flex;
+    flex-direction: row-reverse;
+    justify-content: flex-end;
+    font-size: 2.2rem;
+    cursor: pointer;
+}
+
+.star-rating > span {
+    padding: 0 4px;
+    color: #adb5bd;
+    transition: color 0.2s;
+}
+
+.star-rating > span:hover,
+.star-rating > span:hover ~ span {
+    color: var(--rating-color);
+}
+
+.star-rating > span.active,
+.star-rating > span.active ~ span {
+    color: var(--rating-color);
+}
+
+/* Updated Submit Button */
+.btn-submit {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    width: 100%;
+    padding: 15px;
+    margin-top: 25px;
+    background: linear-gradient(135deg, #007bff, #0056b3);
+    color: #fff;
+    border: none;
+    border-radius: 12px;
+    font-size: 18px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: transform 0.2s, box-shadow 0.3s;
+    box-shadow: 0 4px 15px rgba(0, 123, 255, 0.3);
+}
+
+.btn-submit:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(0, 123, 255, 0.4);
+}
+
+.btn-submit:disabled {
+    background-color: var(--secondary-color);
+    cursor: not-allowed;
+    box-shadow: none;
+}
+
+.status {
+    text-align: center;
+    padding: 15px;
+    margin-top: 20px;
+    border-radius: 8px;
+    font-weight: bold;
+}
+
+.status.loading {
+    background-color: #ffc10740;
+    color: #b08d00;
+}
+
+.status.success {
+    background-color: #d4edda;
+    color: var(--success-color);
+}
+
+.status.error {
+    background-color: #f8d7da;
+    color: var(--error-color);
+}
+
+@media (max-width: 600px) {
+    .container {
+        margin: 20px 10px;
+        padding: 20px;
+    }
+
+    h1 {
+        font-size: 24px;
+    }
+
+    .missing-product-item {
+        flex-direction: column;
+        align-items: stretch;
+    }
+}
