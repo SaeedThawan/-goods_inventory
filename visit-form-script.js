@@ -1,7 +1,7 @@
 // visit-form-script.js
 document.addEventListener("DOMContentLoaded", function() {
-    const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwxppttFwtYoCNfa5hpDgAf_e4Rbh5pPxVjFNfxw7RRUKVY6rR8gt2KQqAjbKa97IEu/exec";
-    const SPREADSHEET_ID = "135m99kTLyGXKmG9oxW765YXMp_6OtLy8O1x-PeG_G1U";
+    const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzkdZ5k6EChKCDiNxKWXH6QjB4tZX7xX-T1Nn7hDNSRA_NI_KsXA7IF1Rpjq09Ow249zw/exec";
+    const SPREADSHEET_ID = "1lhwyVJPuZgz_oBxNEVnAU5zcV53OCuNDA1_IrF210m8";
     
     const form = document.getElementById('visitForm');
     const statusMessage = document.getElementById('statusMessage');
