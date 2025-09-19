@@ -1,4 +1,4 @@
-// visit-form-script.js
+// script.js
 document.addEventListener("DOMContentLoaded", function() {
     const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzkdZ5k6EChKCDiNxKWXH6QjB4tZX7xX-T1Nn7hDNSRA_NI_KsXA7IF1Rpjq09Ow249zw/exec";
     const SPREADSHEET_ID = "1lhwyVJPuZgz_oBxNEVnAU5zcV53OCuNDA1_IrF210m8";
