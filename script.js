@@ -43,17 +43,22 @@ document.addEventListener("DOMContentLoaded", function() {
             governorateSelect.appendChild(option);
         });
 
-        // Populate Customers
+        // Store fetched data
         customersData = customers;
         allProductsData = products;
+
+        // Populate the initial customer list. We will not filter by governorate here.
+        populateCustomersList(customersData);
         
-        populateCustomersList();
-        
+        // Add the initial product entry after data is loaded
+        productsContainer.appendChild(createProductEntry());
+
         // Add event listeners for dynamic data
         governorateSelect.addEventListener('change', () => {
             customerNameInput.value = '';
             customerCodeInput.value = '';
-            populateCustomersList();
+            // We will re-populate the *full* list here, as the JSON file lacks governorate data
+            populateCustomersList(customersData);
         });
 
         customerNameInput.addEventListener('input', () => {
@@ -71,12 +76,10 @@ document.addEventListener("DOMContentLoaded", function() {
         statusMessage.className = 'status error';
     });
 
-    function populateCustomersList() {
+    // Modified function to populate customers without filtering
+    function populateCustomersList(customersToPopulate) {
         customersDatalist.innerHTML = '';
-        const selectedGovernorate = governorateSelect.value;
-        const filteredCustomers = selectedGovernorate ? customersData.filter(c => c.Governorate === selectedGovernorate) : customersData;
-        
-        filteredCustomers.forEach(customer => {
+        customersToPopulate.forEach(customer => {
             const option = document.createElement('option');
             option.value = customer.Customer_Name_AR;
             option.dataset.code = customer.Customer_Code;
@@ -148,16 +151,6 @@ document.addEventListener("DOMContentLoaded", function() {
 
         return productEntry;
     }
-
-    // Add initial product entry
-    if (productsContainer.children.length === 0) {
-        productsContainer.appendChild(createProductEntry());
-    }
-
-    // Add another product entry on button click
-    addProductBtn.addEventListener('click', () => {
-        productsContainer.appendChild(createProductEntry());
-    });
     
     // Star rating functionality
     const starRatingContainer = document.getElementById('storeRating');
