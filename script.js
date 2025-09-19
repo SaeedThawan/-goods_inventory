@@ -1,275 +1,166 @@
-// script.js
-document.addEventListener("DOMContentLoaded", function() {
-    const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzkdZ5k6EChKCDiNxKWXH6QjB4tZX7xX-T1Nn7hDNSRA_NI_KsXA7IF1Rpjq09Ow249zw/exec";
-    
-    const form = document.getElementById('visitForm');
-    const statusMessage = document.getElementById('statusMessage');
-    const customerNameInput = document.getElementById('customerNameInput');
-    const customersDatalist = document.getElementById('customersList');
-    const customerCodeInput = document.getElementById('customerCode');
-    const submitBtn = document.getElementById('submitBtn');
-    const addProductBtn = document.getElementById('addProductBtn');
-    const productsContainer = document.getElementById('missingProductsContainer');
-    const salesRepSelect = document.getElementById('salesRepName');
-    const governorateSelect = document.getElementById('governorate');
-    const visitDateInput = document.getElementById('visitDate');
-    const visitTimeInput = document.getElementById('visitTime');
-    const exitTimeInput = document.getElementById('exitTime');
+// اسم ورقة العمل التي قمنا بتصميمها
+const SHEET_NAME = "VisitsData";
 
-    let customersData = [];
-    let allProductsData = [];
-    let isSubmitting = false;
+// معرّف (ID) مجلد Google Drive لرفع المرفقات.
+// قم بتغيير هذا المعرف إلى معرّف المجلد الخاص بك
+const ATTACHMENTS_FOLDER_ID = "YOUR_ATTACHMENTS_FOLDER_ID_HERE";
 
-    // Fetch all required data
-    Promise.all([
-        fetch('sales_representatives.json').then(res => res.json()),
-        fetch('customers_main.json').then(res => res.json()),
-        fetch('products.json').then(res => res.json()),
-        fetch('governorates.json').then(res => res.json()),
-    ]).then(([salesReps, customers, products, governorates]) => {
-        // Populate Sales Reps
-        salesReps.forEach(rep => {
-            const option = document.createElement('option');
-            option.value = rep;
-            option.textContent = rep;
-            salesRepSelect.appendChild(option);
-        });
+/**
+ * دالة لمعالجة طلبات POST من النموذج.
+ * @param {Object} e - بيانات الطلب.
+ * @returns {TextOutput} - رد نصي بسيط.
+ */
+function doPost(e) {
+    try {
+        if (!e || !e.parameter) {
+            Logger.log('❌ لا توجد بيانات في الطلب');
+            return ContentService.createTextOutput("Error: No data received.");
+        }
 
-        // Populate Governorates
-        governorates.forEach(gov => {
-            const option = document.createElement('option');
-            option.value = gov;
-            option.textContent = gov;
-            governorateSelect.appendChild(option);
-        });
+        const data = e.parameter;
+        const sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(SHEET_NAME);
+        if (!sheet) {
+            Logger.log('❌ ورقة العمل غير موجودة');
+            return ContentService.createTextOutput(`Error: Sheet "${SHEET_NAME}" not found.`);
+        }
 
-        // Store fetched data
-        customersData = customers;
-        allProductsData = products;
+        // حساب مدة الزيارة
+        let durationInMinutes = "";
+        if (data.visitDate && data.visitTime && data.exitTime) {
+            const visitDateTime = new Date(`${data.visitDate}T${data.visitTime}:00`);
+            const exitDateTime = new Date(`${data.visitDate}T${data.exitTime}:00`);
 
-        // Populate the initial customer list. We will not filter by governorate here.
-        populateCustomersList(customersData);
-        
-        // Add the initial product entry after data is loaded
-        productsContainer.appendChild(createProductEntry());
+            if (visitDateTime >= exitDateTime) {
+                Logger.log('❌ وقت الخروج لا يمكن أن يسبق أو يساوي وقت الدخول');
+                return ContentService.createTextOutput("Error: Exit time must be after visit time.");
+            }
+            durationInMinutes = ((exitDateTime - visitDateTime) / (1000 * 60)).toFixed(2);
 
-        // Add event listeners for dynamic data
-        governorateSelect.addEventListener('change', () => {
-            customerNameInput.value = '';
-            customerCodeInput.value = '';
-            // We will re-populate the *full* list here, as the JSON file lacks governorate data
-            populateCustomersList(customersData);
-        });
+            if (durationInMinutes > 300) {
+                Logger.log('❌ مدة الزيارة تجاوزت 5 ساعات.');
+                return ContentService.createTextOutput("Duration constraint violation: Visit duration cannot exceed 5 hours.");
+            }
+        }
 
-        customerNameInput.addEventListener('input', () => {
-            const selectedOption = customersDatalist.querySelector(`option[value="${customerNameInput.value}"]`);
-            if (selectedOption) {
-                customerCodeInput.value = selectedOption.dataset.code;
+        let attachmentLink = "";
+
+        const productsData = data.products ? JSON.parse(data.products) : [];
+        const productsToSend = productsData.length > 0 ? productsData : [{
+            name: '',
+            code: '',
+            category: '',
+            quantity: '',
+            unit: '',
+            expiry: ''
+        }];
+
+        // ** منطق تجميع المنتجات الجديدة هنا **
+        const aggregatedProducts = {};
+        productsToSend.forEach(product => {
+            const productKey = product.name;
+            if (!aggregatedProducts[productKey]) {
+                aggregatedProducts[productKey] = {
+                    name: product.name,
+                    code: product.code,
+                    category: product.category,
+                    expiry: product.expiry,
+                    units: {}
+                };
+            }
+            const unit = product.unit || 'UndefinedUnit';
+            const quantity = parseInt(product.quantity) || 0;
+            if (aggregatedProducts[productKey].units[unit]) {
+                aggregatedProducts[productKey].units[unit] += quantity;
             } else {
-                customerCodeInput.value = '';
+                aggregatedProducts[productKey].units[unit] = quantity;
             }
         });
 
-    }).catch(error => {
-        console.error('Failed to load data files:', error);
-        statusMessage.textContent = '❌ فشل تحميل البيانات الأساسية. يرجى التحقق من الملفات.';
-        statusMessage.className = 'status error';
-    });
+        const finalProductsList = Object.values(aggregatedProducts);
 
-    // Modified function to populate customers without filtering
-    function populateCustomersList(customersToPopulate) {
-        customersDatalist.innerHTML = '';
-        customersToPopulate.forEach(customer => {
-            const option = document.createElement('option');
-            option.value = customer.Customer_Name_AR;
-            option.dataset.code = customer.Customer_Code;
-            customersDatalist.appendChild(option);
-        });
-    }
-
-    // Function to create a new product entry
-    function createProductEntry() {
-        const productEntry = document.createElement('div');
-        productEntry.classList.add('product-entry');
-        productEntry.innerHTML = `
-            <button type="button" class="remove-product-btn">X</button>
-            <div class="form-group">
-                <label>اختر المنتج:</label>
-                <select class="productName" required></select>
-                <input type="hidden" class="productCode">
-                <input type="hidden" class="productCategory">
-            </div>
-            <div class="form-group">
-                <label>الكمية:</label>
-                <input type="number" class="productQuantity" min="1" required>
-            </div>
-            <div class="form-group">
-                <label>الوحدة:</label>
-                <select class="productUnit" required>
-                    <option value="">اختر وحدة</option>
-                    <option value="كرتون">كرتون</option>
-                    <option value="علبة">علبة</option>
-                    <option value="حبة">حبة</option>
-                </select>
-            </div>
-            <div class="form-group">
-                <label>تاريخ الانتهاء:</label>
-                <input type="date" class="productExpiry" required>
-            </div>
-        `;
-
-        const productNameSelect = productEntry.querySelector('.productName');
-        const productCodeInput = productEntry.querySelector('.productCode');
-        const productCategoryInput = productEntry.querySelector('.productCategory');
-
-        // Add default empty option
-        const emptyOption = document.createElement('option');
-        emptyOption.value = '';
-        emptyOption.textContent = 'اختر منتج';
-        productNameSelect.appendChild(emptyOption);
-
-        allProductsData.forEach(product => {
-            const option = document.createElement('option');
-            option.value = product.Product_Name_AR;
-            option.textContent = product.Product_Name_AR;
-            option.dataset.code = product.Product_Code;
-            option.dataset.category = product.Category;
-            productNameSelect.appendChild(option);
+        // ** تعديل الأعمدة الديناميكية لتدعم الوحدات المختلفة **
+        let headers = sheet.getRange(1, 1, 1, sheet.getLastColumn()).getValues()[0];
+        let headersMap = {};
+        headers.forEach((header, index) => {
+            headersMap[header.trim()] = index;
         });
 
-        productNameSelect.addEventListener('change', (e) => {
-            const selectedOption = e.target.options[e.target.selectedIndex];
-            if (selectedOption) {
-                productCodeInput.value = selectedOption.dataset.code || '';
-                productCategoryInput.value = selectedOption.dataset.category || '';
-            }
-        });
-
-        productEntry.querySelector('.remove-product-btn').addEventListener('click', () => {
-            productEntry.remove();
-        });
-
-        return productEntry;
-    }
-    
-    // Star rating functionality
-    const starRatingContainer = document.getElementById('storeRating');
-    const ratingValueInput = document.getElementById('ratingValue');
-
-    starRatingContainer.addEventListener('click', (e) => {
-        if (e.target.matches('span')) {
-            const value = e.target.dataset.value;
-            ratingValueInput.value = value;
-            Array.from(starRatingContainer.children).forEach(star => {
-                if (star.dataset.value <= value) {
-                    star.classList.add('active');
-                } else {
-                    star.classList.remove('active');
+        const dynamicHeaders = ['submissionDate', 'dataEntryName', 'salesRepName', 'customerCode', 'customerName', 'governorate', 'region', 'visitDate', 'visitTime', 'exitTime', 'visitDuration', 'storeRating', 'suggestions', 'attachmentLink', 'latitude', 'longitude', 'productName', 'missingProductCode', 'productCategory', 'productExpiry'];
+        
+        finalProductsList.forEach(product => {
+            for (const unit in product.units) {
+                const quantityHeader = `productQuantity_${unit}`;
+                if (!dynamicHeaders.includes(quantityHeader)) {
+                    dynamicHeaders.push(quantityHeader);
                 }
-            });
-        }
-    });
+            }
+        });
 
-    // Handle form submission
-    form.addEventListener('submit', async (event) => {
-        event.preventDefault();
-        
-        if (isSubmitting) return;
-        isSubmitting = true;
-        submitBtn.disabled = true;
-        
-        statusMessage.textContent = 'جاري الإرسال...';
-        statusMessage.className = 'status submitting';
-
-        // Collect data from standard form fields
-        const data = {
-            dataEntryName: document.getElementById('dataEntryName').value,
-            salesRepName: document.getElementById('salesRepName').value,
-            governorate: document.getElementById('governorate').value,
-            customerName: customerNameInput.value,
-            customerCode: customerCodeInput.value,
-            visitDate: visitDateInput.value,
-            visitTime: visitTimeInput.value,
-            exitTime: exitTimeInput.value,
-            storeRating: ratingValueInput.value,
-            suggestions: document.getElementById('suggestions').value,
-        };
-
-        // Manually collect data from dynamic product entries
-        const productEntries = productsContainer.querySelectorAll('.product-entry');
-        const products = [];
-        productEntries.forEach(entry => {
-            const productName = entry.querySelector('.productName').value;
-            if (productName) {
-                products.push({
-                    name: productName,
-                    code: entry.querySelector('.productCode').value,
-                    category: entry.querySelector('.productCategory').value,
-                    quantity: entry.querySelector('.productQuantity').value,
-                    unit: entry.querySelector('.productUnit').value,
-                    expiry: entry.querySelector('.productExpiry').value,
+        dynamicHeaders.forEach(headerKey => {
+            if (!headersMap.hasOwnProperty(headerKey)) {
+                const lastColumn = sheet.getLastColumn();
+                sheet.insertColumnAfter(lastColumn);
+                sheet.getRange(1, lastColumn + 1).setValue(headerKey);
+                headers = sheet.getRange(1, 1, 1, sheet.getLastColumn()).getValues()[0];
+                headersMap = {};
+                headers.forEach((header, index) => {
+                    headersMap[header.trim()] = index;
                 });
             }
         });
-        // Pass products as a stringified JSON object
-        data.products = JSON.stringify(products);
-        
-        // Add geolocation data
-        if ("geolocation" in navigator) {
-            try {
-                const position = await new Promise((resolve, reject) => {
-                    navigator.geolocation.getCurrentPosition(resolve, reject, { timeout: 10000 });
-                });
-                data.latitude = position.coords.latitude;
-                data.longitude = position.coords.longitude;
-            } catch (error) {
-                console.error("Geolocation error:", error);
-                data.latitude = "Location not available";
-                data.longitude = "Location not available";
-            }
-        } else {
-            data.latitude = "Geolocation not supported";
-            data.longitude = "Geolocation not supported";
-        }
 
-        try {
-            const response = await fetch(SCRIPT_URL, {
-                method: 'POST',
-                body: new URLSearchParams(data),
-                headers: {
-                    'Content-Type': 'application/x-www-form-urlencoded'
-                },
-            });
+        let rowsInserted = 0;
+        finalProductsList.forEach(product => {
+            const newRow = new Array(headers.length).fill('');
+            
+            newRow[headersMap['submissionDate']] = new Date();
+            newRow[headersMap['dataEntryName']] = data.dataEntryName || '';
+            newRow[headersMap['salesRepName']] = data.salesRepName || '';
+            newRow[headersMap['customerCode']] = data.customerCode || '';
+            newRow[headersMap['customerName']] = data.customerName || '';
+            newRow[headersMap['governorate']] = data.governorate || '';
+            newRow[headersMap['region']] = data.region || '';
+            newRow[headersMap['visitDate']] = data.visitDate || '';
+            newRow[headersMap['visitTime']] = data.visitTime || '';
+            newRow[headersMap['exitTime']] = data.exitTime || '';
+            newRow[headersMap['visitDuration']] = durationInMinutes;
+            newRow[headersMap['storeRating']] = data.storeRating || '';
+            newRow[headersMap['suggestions']] = data.suggestions || '';
+            newRow[headersMap['attachmentLink']] = attachmentLink || '';
+            
+            newRow[headersMap['latitude']] = data.latitude || '';
+            newRow[headersMap['longitude']] = data.longitude || '';
 
-            const result = await response.text();
-            if (result.includes("Success")) {
-                statusMessage.textContent = '✅ تم إرسال البيانات بنجاح!';
-                statusMessage.className = 'status success';
-                form.reset();
-                customerCodeInput.value = '';
-                ratingValueInput.value = '';
-                Array.from(starRatingContainer.children).forEach(star => star.classList.remove('active'));
-                // Clear dynamic product entries and add one again
-                productsContainer.innerHTML = '';
-                productsContainer.appendChild(createProductEntry());
-            } else {
-                statusMessage.textContent = `❌ حدث خطأ: ${result}`;
-                statusMessage.className = 'status error';
+            // إضافة بيانات المنتجات المجمّعة
+            newRow[headersMap['productName']] = product.name;
+            newRow[headersMap['missingProductCode']] = product.code;
+            newRow[headersMap['productCategory']] = product.category;
+            newRow[headersMap['productExpiry']] = product.expiry;
+
+            // إضافة الكميات حسب الوحدات في أعمدة منفصلة
+            for (const unit in product.units) {
+                const quantityHeader = `productQuantity_${unit}`;
+                if (headersMap.hasOwnProperty(quantityHeader)) {
+                    newRow[headersMap[quantityHeader]] = product.units[unit];
+                }
             }
-        } catch (error) {
-            console.error('Submission error:', error);
-            statusMessage.textContent = '❌ فشل الإرسال. يرجى التحقق من اتصالك بالإنترنت.';
-            statusMessage.className = 'status error';
-        } finally {
-            isSubmitting = false;
-            submitBtn.disabled = false;
-        }
-    });
-    
-    // Set today's date and time as default values
-    const today = new Date();
-    const dateFormatted = today.toISOString().split('T')[0];
-    const timeFormatted = today.toTimeString().split(' ')[0].substring(0, 5);
-    visitDateInput.value = dateFormatted;
-    visitTimeInput.value = timeFormatted;
-});
+
+            sheet.appendRow(newRow);
+            rowsInserted++;
+        });
+
+        Logger.log(`✅ تم إدراج ${rowsInserted} صفوف بنجاح`);
+        return ContentService.createTextOutput("Success");
+
+    } catch (error) {
+        Logger.log('⚠️ خطأ في معالجة الطلب: ' + error.message);
+        return ContentService.createTextOutput("Error: An unexpected error occurred. Please check the Apps Script logs for details.");
+    }
+}
+
+/**
+ * دالة للتعامل مع طلبات GET البسيطة.
+ */
+function doGet(e) {
+    return ContentService.createTextOutput('GET request received. Please use POST to submit data.');
+}
