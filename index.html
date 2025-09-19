@@ -1,508 +1,49 @@
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>نموذج تقرير الزيارة</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
-    <style>
-        @import url('https://fonts.googleapis.com/css2?family=Tajawal:wght@400;700&display=swap');
-
-        :root {
-            --primary-color: #007bff;
-            --secondary-color: #6c757d;
-            --success-color: #28a745;
-            --error-color: #dc3545;
-            --warning-color: #ffc107;
-            --bg-color: #f4f7f6;
-            --card-bg-color: #ffffff;
-            --border-color: #e2e8f0;
-            --text-color: #333;
-            --light-text-color: #777;
-        }
-
-        * {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-        }
-
-        body {
-            font-family: 'Tajawal', sans-serif;
-            background-color: var(--bg-color);
-            display: flex;
-            justify-content: center;
-            padding: 2rem 1rem;
-            color: var(--text-color);
-            direction: rtl;
-        }
-
-        .container {
-            width: 100%;
-            max-width: 800px;
-            background-color: var(--card-bg-color);
-            border-radius: 12px;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
-            padding: 2.5rem;
-            display: flex;
-            flex-direction: column;
-            gap: 1.5rem;
-        }
-
-        .form-title {
-            text-align: center;
-            color: var(--primary-color);
-            margin-bottom: 1.5rem;
-            font-size: 2.2rem;
-            font-weight: 700;
-        }
-
-        .section {
-            border: 1px solid var(--border-color);
-            border-radius: 8px;
-            padding: 1.5rem;
-            margin-bottom: 1.5rem;
-        }
-
-        .section h2 {
-            font-size: 1.5rem;
-            margin-bottom: 1.5rem;
-            color: var(--primary-color);
-            border-bottom: 2px solid var(--primary-color);
-            padding-bottom: 0.5rem;
-            display: inline-block;
-        }
-
-        .form-group {
-            margin-bottom: 1rem;
-            display: flex;
-            flex-direction: column;
-        }
-
-        .form-group label {
-            font-weight: 700;
-            margin-bottom: 0.5rem;
-            color: var(--text-color);
-        }
-
-        .form-group input,
-        .form-group select,
-        .form-group textarea {
-            width: 100%;
-            padding: 0.75rem;
-            border: 1px solid var(--border-color);
-            border-radius: 6px;
-            font-size: 1rem;
-            color: var(--text-color);
-            transition: border-color 0.3s, box-shadow 0.3s;
-            background-color: #f9fafb;
-        }
-
-        .form-group input:focus,
-        .form-group select:focus,
-        .form-group textarea:focus {
-            outline: none;
-            border-color: var(--primary-color);
-            box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.1);
-        }
-
-        .form-group textarea {
-            min-height: 100px;
-            resize: vertical;
-        }
-        
-        /* Star Rating */
-        .rating-group {
-            display: flex;
-            flex-direction: column;
-            align-items: flex-start;
-        }
-
-        .rating-stars {
-            display: flex;
-            direction: ltr; /* To align stars from left to right */
-        }
-        .rating-stars input[type="radio"] {
-            display: none;
-        }
-        .rating-stars label {
-            font-size: 2rem;
-            color: #ddd;
-            cursor: pointer;
-            transition: color 0.2s;
-            margin: 0 5px;
-        }
-        .rating-stars input[type="radio"]:checked ~ label,
-        .rating-stars label:hover,
-        .rating-stars label:hover ~ label {
-            color: #ffc107;
-        }
-        
-        .product-entry {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 1rem;
-            background-color: #f9fafb;
-            border: 1px dashed var(--border-color);
-            border-radius: 8px;
-            padding: 1.5rem;
-            margin-bottom: 1rem;
-            position: relative;
-        }
-
-        .remove-product-btn {
-            position: absolute;
-            top: 10px;
-            left: 10px;
-            background-color: var(--error-color);
-            color: #fff;
-            border: none;
-            border-radius: 50%;
-            width: 25px;
-            height: 25px;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            font-size: 0.8rem;
-            cursor: pointer;
-            transition: background-color 0.3s;
-        }
-
-        .remove-product-btn:hover {
-            background-color: #c82333;
-        }
-
-        .btn-add, .btn-submit {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 0.5rem;
-            padding: 0.75rem 1.5rem;
-            font-size: 1rem;
-            font-weight: 700;
-            cursor: pointer;
-            border: none;
-            border-radius: 8px;
-            transition: background-color 0.3s, transform 0.2s;
-        }
-
-        .btn-add {
-            background-color: var(--success-color);
-            color: #fff;
-            width: 100%;
-            margin-top: 1rem;
-        }
-
-        .btn-add:hover {
-            background-color: #218838;
-            transform: translateY(-2px);
-        }
-
-        .btn-submit {
-            background-color: var(--primary-color);
-            color: #fff;
-            width: 100%;
-            margin-top: 2rem;
-        }
-
-        .btn-submit:hover {
-            background-color: #0056b3;
-            transform: translateY(-2px);
-        }
-        
-        #submitBtn svg {
-            fill: #fff;
-        }
-
-        .status {
-            text-align: center;
-            padding: 1rem;
-            border-radius: 6px;
-            margin-top: 1rem;
-            font-weight: 700;
-            display: none; /* Initially hidden */
-        }
-
-        .status.success {
-            background-color: #d4edda;
-            color: #155724;
-            border: 1px solid #c3e6cb;
-        }
-
-        .status.error {
-            background-color: #f8d7da;
-            color: #721c24;
-            border: 1px solid #f5c6cb;
-        }
-        
-        @media (max-width: 600px) {
-            .container {
-                padding: 1.5rem;
-            }
-
-            .product-entry {
-                grid-template-columns: 1fr;
-            }
-        }
-    </style>
-    <script>
-        document.addEventListener('DOMContentLoaded', () => {
-            const SCRIPT_URL = 'YOUR_APPS_SCRIPT_URL_HERE'; // قم بتغيير هذا الرابط
-            const visitForm = document.getElementById('visitForm');
-            const statusMessage = document.getElementById('statusMessage');
-            const missingProductsContainer = document.getElementById('missingProductsContainer');
-            const addProductBtn = document.getElementById('addProductBtn');
-            const customerNameInput = document.getElementById('customerNameInput');
-            const customersList = document.getElementById('customersList');
-            const customerCodeInput = document.getElementById('customerCode');
-            const governorateSelect = document.getElementById('governorate');
-            const salesRepSelect = document.getElementById('salesRepName');
-
-            // بيانات افتراضية (يجب استبدالها ببيانات من قاعدة بيانات أو ملف خارجي)
-            const customersData = [
-                { name: 'عميل الرياض 1', code: 'CUST-001', governorate: 'الرياض' },
-                { name: 'عميل جدة 2', code: 'CUST-002', governorate: 'جدة' },
-                { name: 'عميل الدمام 3', code: 'CUST-003', governorate: 'الدمام' },
-                { name: 'عميل الرياض 4', code: 'CUST-004', governorate: 'الرياض' },
-                { name: 'عميل مكة 5', code: 'CUST-005', governorate: 'مكة' },
-            ];
-
-            const salesRepsData = ['محمد علي', 'أحمد سامي', 'خالد فهد'];
-            const productsData = [
-                { name: 'منتج أ - 101', code: 'PROD-101', category: 'الأجهزة' },
-                { name: 'منتج ب - 102', code: 'PROD-102', category: 'البرامج' },
-                { name: 'منتج ج - 103', code: 'PROD-103', category: 'الخدمات' },
-            ];
-            
-            const governoratesData = ['الرياض', 'جدة', 'الدمام', 'مكة', 'المدينة المنورة'];
-
-            // تعبئة قائمة المروجين
-            salesRepsData.forEach(rep => {
-                const option = document.createElement('option');
-                option.value = rep;
-                option.textContent = rep;
-                salesRepSelect.appendChild(option);
-            });
-            
-            // تعبئة قائمة المحافظات
-            governoratesData.forEach(gov => {
-                const option = document.createElement('option');
-                option.value = gov;
-                option.textContent = gov;
-                governorateSelect.appendChild(option);
-            });
-
-            // تعبئة قائمة العملاء
-            function populateCustomersList() {
-                customersList.innerHTML = '';
-                const selectedGovernorate = governorateSelect.value;
-                const filteredCustomers = selectedGovernorate ? customersData.filter(c => c.governorate === selectedGovernorate) : customersData;
-                
-                filteredCustomers.forEach(customer => {
-                    const option = document.createElement('option');
-                    option.value = customer.name;
-                    option.setAttribute('data-code', customer.code);
-                    customersList.appendChild(option);
-                });
-            }
-            populateCustomersList();
-            governorateSelect.addEventListener('change', () => {
-                customerNameInput.value = '';
-                customerCodeInput.value = '';
-                populateCustomersList();
-            });
-
-            customerNameInput.addEventListener('input', () => {
-                const selectedOption = customersList.querySelector(`option[value="${customerNameInput.value}"]`);
-                if (selectedOption) {
-                    customerCodeInput.value = selectedOption.getAttribute('data-code');
-                } else {
-                    customerCodeInput.value = '';
-                }
-            });
-
-            function createProductEntry() {
-                const productEntry = document.createElement('div');
-                productEntry.classList.add('product-entry');
-                productEntry.innerHTML = `
-                    <button type="button" class="remove-product-btn">X</button>
-                    <div class="form-group">
-                        <label>اختر المنتج:</label>
-                        <select class="productName" required></select>
-                        <input type="hidden" class="productCode">
-                        <input type="hidden" class="productCategory">
-                    </div>
-                    <div class="form-group">
-                        <label>الكمية:</label>
-                        <input type="number" class="productQuantity" min="1" required>
-                    </div>
-                    <div class="form-group">
-                        <label>الوحدة:</label>
-                        <select class="productUnit" required>
-                            <option value="">اختر وحدة</option>
-                            <option value="كرتون">كرتون</option>
-                            <option value="علبة">علبة</option>
-                            <option value="حبة">حبة</option>
-                        </select>
-                    </div>
-                    <div class="form-group">
-                        <label>تاريخ الانتهاء:</label>
-                        <input type="date" class="productExpiry" required>
-                    </div>
-                `;
-
-                const productNameSelect = productEntry.querySelector('.productName');
-                const productCodeInput = productEntry.querySelector('.productCode');
-                const productCategoryInput = productEntry.querySelector('.productCategory');
-
-                // Add default empty option
-                const emptyOption = document.createElement('option');
-                emptyOption.value = '';
-                emptyOption.textContent = 'اختر منتج';
-                productNameSelect.appendChild(emptyOption);
-
-                productsData.forEach(product => {
-                    const option = document.createElement('option');
-                    option.value = product.name;
-                    option.textContent = product.name;
-                    option.setAttribute('data-code', product.code);
-                    option.setAttribute('data-category', product.category);
-                    productNameSelect.appendChild(option);
-                });
-
-                productNameSelect.addEventListener('change', (e) => {
-                    const selectedOption = e.target.options[e.target.selectedIndex];
-                    if (selectedOption) {
-                        productCodeInput.value = selectedOption.getAttribute('data-code') || '';
-                        productCategoryInput.value = selectedOption.getAttribute('data-category') || '';
-                    }
-                });
-
-                productEntry.querySelector('.remove-product-btn').addEventListener('click', () => {
-                    productEntry.remove();
-                });
-
-                return productEntry;
-            }
-
-            // Initially add one product entry
-            if (missingProductsContainer.children.length === 0) {
-                missingProductsContainer.appendChild(createProductEntry());
-            }
-
-            addProductBtn.addEventListener('click', () => {
-                missingProductsContainer.appendChild(createProductEntry());
-            });
-
-            function showStatus(message, isSuccess) {
-                statusMessage.textContent = message;
-                statusMessage.className = `status ${isSuccess ? 'success' : 'error'}`;
-                statusMessage.style.display = 'block';
-            }
-            
-            visitForm.addEventListener('submit', async (event) => {
-                event.preventDefault();
-                
-                const formData = new FormData(visitForm);
-                const data = Object.fromEntries(formData.entries());
-
-                const productEntries = missingProductsContainer.querySelectorAll('.product-entry');
-                const products = [];
-                productEntries.forEach(entry => {
-                    const productName = entry.querySelector('.productName').value;
-                    if (productName) {
-                        products.push({
-                            name: productName,
-                            code: entry.querySelector('.productCode').value,
-                            category: entry.querySelector('.productCategory').value,
-                            quantity: entry.querySelector('.productQuantity').value,
-                            unit: entry.querySelector('.productUnit').value,
-                            expiry: entry.querySelector('.productExpiry').value,
-                        });
-                    }
-                });
-                data.products = JSON.stringify(products);
-                
-                // Add a hidden input to the form or append the missing product data to the form
-                const missingProducts = products.map(p => p.name).join(',');
-                const missingProductCodes = products.map(p => p.code).join(',');
-                const missingProductCategories = products.map(p => p.category).join(',');
-                
-                if (missingProducts) {
-                    data.missingProduct = missingProducts;
-                    data.missingProductCode = missingProductCodes;
-                    data.missingProductCategory = missingProductCategories;
-                }
-                
-                // إضافة بيانات الموقع الجغرافي
-                if ("geolocation" in navigator) {
-                    try {
-                        const position = await new Promise((resolve, reject) => {
-                            navigator.geolocation.getCurrentPosition(resolve, reject, { timeout: 10000 });
-                        });
-                        data.latitude = position.coords.latitude;
-                        data.longitude = position.coords.longitude;
-                    } catch (error) {
-                        console.error("Geolocation error:", error);
-                        data.latitude = "Location not available";
-                        data.longitude = "Location not available";
-                    }
-                } else {
-                    data.latitude = "Geolocation not supported";
-                    data.longitude = "Geolocation not supported";
-                }
-
-                try {
-                    const response = await fetch(SCRIPT_URL, {
-                        method: 'POST',
-                        body: new URLSearchParams(data),
-                        headers: {
-                            'Content-Type': 'application/x-www-form-urlencoded'
-                        },
-                    });
-
-                    const result = await response.text();
-                    if (result.includes("Success")) {
-                        showStatus('✅ تم إرسال البيانات بنجاح!', true);
-                        visitForm.reset();
-                        // Clear dynamic product entries and add one again
-                        missingProductsContainer.innerHTML = '';
-                        missingProductsContainer.appendChild(createProductEntry());
-                    } else {
-                        showStatus(`❌ حدث خطأ: ${result}`, false);
-                    }
-                } catch (error) {
-                    console.error('Submission error:', error);
-                    showStatus('❌ فشل الإرسال. يرجى التحقق من اتصالك بالإنترنت.', false);
-                }
-            });
-        });
-    </script>
+    <link rel="stylesheet" href="style.css">
 </head>
+
 <body>
     <div class="container">
-        <h1 class="form-title">نموذج تقرير الزيارة</h1>
+        <h1>نموذج تقرير الزيارة</h1>
         <form id="visitForm">
-            <div class="section">
-                <h2>معلومات أساسية</h2>
+            <div class="form-section">
+                <h2>بيانات الموظف والعميل</h2>
                 <div class="form-group">
                     <label for="dataEntryName">اسم مدخل البيانات:</label>
                     <input type="text" id="dataEntryName" name="dataEntryName" required>
                 </div>
                 <div class="form-group">
                     <label for="salesRepName">اسم المروج:</label>
-                    <select id="salesRepName" name="salesRepName" required></select>
+                    <select id="salesRepName" name="salesRepName" required>
+                        <option value="">اختر مروج</option>
+                    </select>
                 </div>
                 <div class="form-group">
                     <label for="governorate">المحافظة:</label>
-                    <select id="governorate" name="governorate" required></select>
+                    <select id="governorate" name="governorate" required>
+                        <option value="">اختر محافظة</option>
+                    </select>
                 </div>
                 <div class="form-group">
                     <label for="customerNameInput">اسم العميل:</label>
                     <input type="text" id="customerNameInput" name="customerName" list="customersList" required>
                     <datalist id="customersList"></datalist>
-                    <input type="hidden" id="customerCode" name="customerCode">
                 </div>
+                <div class="form-group">
+                    <label for="customerCode">كود العميل:</label>
+                    <input type="text" id="customerCode" name="customerCode" readonly>
+                </div>
+            </div>
+
+            <div class="form-section">
+                <h2>بيانات الزيارة</h2>
                 <div class="form-group">
                     <label for="visitDate">تاريخ الزيارة:</label>
                     <input type="date" id="visitDate" name="visitDate" required>
@@ -515,56 +56,48 @@
                     <label for="exitTime">وقت الخروج:</label>
                     <input type="time" id="exitTime" name="exitTime" required>
                 </div>
-                <div class="form-group">
-                    <label for="suggestions">مقترحات/ ملاحظات:</label>
-                    <textarea id="suggestions" name="suggestions"></textarea>
-                </div>
             </div>
 
-            <div class="section">
-                <h2>جرد المنتجات</h2>
+            <div class="form-section">
+                <h2>جرد المنتجات الناقصة</h2>
                 <div id="missingProductsContainer">
-                    <div class="product-entry">
-                        <button type="button" class="remove-product-btn">X</button>
-                        <div class="form-group">
-                            <label>اختر المنتج:</label>
-                            <select class="productName" name="productName" required></select>
-                            <input type="hidden" class="productCode" name="productCode">
-                            <input type="hidden" class="productCategory" name="productCategory"> 
-                        </div>
-                        <div class="form-group">
-                            <label>الكمية:</label>
-                            <input type="number" class="productQuantity" name="productQuantity" min="1" required>
-                        </div>
-                        <div class="form-group">
-                            <label>الوحدة:</label>
-                            <select class="productUnit" name="productUnit" required>
-                                <option value="">اختر وحدة</option>
-                                <option value="كرتون">كرتون</option>
-                                <option value="علبة">علبة</option>
-                                <option value="حبة">حبة</option>
-                            </select>
-                        </div>
-                        <div class="form-group">
-                            <label>تاريخ الانتهاء:</label>
-                            <input type="date" class="productExpiry" name="productExpiry" required>
-                        </div>
                     </div>
-                </div>
                 <button type="button" id="addProductBtn" class="btn-add">
                     <span>إضافة منتج آخر</span>
                     <i class="fas fa-plus"></i>
                 </button>
             </div>
-            
+
+            <div class="form-section">
+                <h2>الملاحظات</h2>
+                <div class="form-group">
+                    <label for="storeRating">تقييم المتجر:</label>
+                    <div class="star-rating" id="storeRating">
+                        <span data-value="1">&#9733;</span>
+                        <span data-value="2">&#9733;</span>
+                        <span data-value="3">&#9733;</span>
+                        <span data-value="4">&#9733;</span>
+                        <span data-value="5">&#9733;</span>
+                    </div>
+                    <input type="hidden" id="ratingValue" name="storeRating">
+                </div>
+                <div class="form-group">
+                    <label for="suggestions">مقترحات/ملاحظات أخرى:</label>
+                    <textarea id="suggestions" name="suggestions" rows="4"></textarea>
+                </div>
+            </div>
+
             <button type="submit" id="submitBtn" class="btn-submit">
                 <span>إرسال البيانات</span>
                 <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" fill="currentColor" viewBox="0 0 16 16">
-                    <path d="M15.854 7.646a.5.5 0 0 0 0-.707l-6-6a.5.5 0 0 0-.707.707L14.293 7H1.5a.5.5 0 0 0 0 1h12.793l-5.646 5.646a.5.5 0 0 0 .707.707l6-6z"/>
+                    <path d="M15.854 7.646a.5.5 0 0 0 0-.707l-6-6a.5.5 0 0 0-.707.707L14.293 7H1.5a.5.5 0 0 0 0 1h12.793l-5.646 5.646a.5.5 0 0 0 .707.707l6-6a.5.5 0 0 0 0-.707z" />
                 </svg>
             </button>
-            <p id="statusMessage" class="status"></p>
+            <div id="statusMessage" class="status"></div>
         </form>
     </div>
+
+    <script src="script.js"></script>
 </body>
+
 </html>
