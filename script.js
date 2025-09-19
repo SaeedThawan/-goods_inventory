@@ -1,7 +1,6 @@
 // script.js
 document.addEventListener("DOMContentLoaded", function() {
     const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzkdZ5k6EChKCDiNxKWXH6QjB4tZX7xX-T1Nn7hDNSRA_NI_KsXA7IF1Rpjq09Ow249zw/exec";
-    const SPREADSHEET_ID = "1lhwyVJPuZgz_oBxNEVnAU5zcV53OCuNDA1_IrF210m8";
     
     const form = document.getElementById('visitForm');
     const statusMessage = document.getElementById('statusMessage');
@@ -26,33 +25,58 @@ document.addEventListener("DOMContentLoaded", function() {
         fetch('sales_representatives.json').then(res => res.json()),
         fetch('customers_main.json').then(res => res.json()),
         fetch('products.json').then(res => res.json()),
-        fetch('governorates.json').then(res => res.json())
-    ]).then(([reps, customers, products, governorates]) => {
-        populateDropdown(salesRepSelect, reps);
-        populateDropdown(governorateSelect, governorates);
+        fetch('governorates.json').then(res => res.json()),
+    ]).then(([salesReps, customers, products, governorates]) => {
+        // Populate Sales Reps
+        salesReps.forEach(rep => {
+            const option = document.createElement('option');
+            option.value = rep;
+            option.textContent = rep;
+            salesRepSelect.appendChild(option);
+        });
+
+        // Populate Governorates
+        governorates.forEach(gov => {
+            const option = document.createElement('option');
+            option.value = gov;
+            option.textContent = gov;
+            governorateSelect.appendChild(option);
+        });
+
+        // Populate Customers
         customersData = customers;
-        populateCustomerDatalist(customersData);
-        allProductsData = products.filter(p => p.Product_Code !== "N/A"); // Filter out the 'N/A' entry
-        addProductEntry(); // Add the first product entry
+        allProductsData = products;
+        
+        populateCustomersList();
+        
+        // Add event listeners for dynamic data
+        governorateSelect.addEventListener('change', () => {
+            customerNameInput.value = '';
+            customerCodeInput.value = '';
+            populateCustomersList();
+        });
+
+        customerNameInput.addEventListener('input', () => {
+            const selectedOption = customersDatalist.querySelector(`option[value="${customerNameInput.value}"]`);
+            if (selectedOption) {
+                customerCodeInput.value = selectedOption.dataset.code;
+            } else {
+                customerCodeInput.value = '';
+            }
+        });
+
     }).catch(error => {
-        console.error("Error fetching data:", error);
-        statusMessage.textContent = 'خطأ في تحميل البيانات الأساسية.';
+        console.error('Failed to load data files:', error);
+        statusMessage.textContent = '❌ فشل تحميل البيانات الأساسية. يرجى التحقق من الملفات.';
         statusMessage.className = 'status error';
     });
 
-    function populateDropdown(selectElement, items) {
-        selectElement.innerHTML = '<option value="">اختر...</option>';
-        items.forEach(item => {
-            const option = document.createElement('option');
-            option.value = item;
-            option.textContent = item;
-            selectElement.appendChild(option);
-        });
-    }
-
-    function populateCustomerDatalist(customers) {
+    function populateCustomersList() {
         customersDatalist.innerHTML = '';
-        customers.forEach(customer => {
+        const selectedGovernorate = governorateSelect.value;
+        const filteredCustomers = selectedGovernorate ? customersData.filter(c => c.Governorate === selectedGovernorate) : customersData;
+        
+        filteredCustomers.forEach(customer => {
             const option = document.createElement('option');
             option.value = customer.Customer_Name_AR;
             option.dataset.code = customer.Customer_Code;
@@ -60,39 +84,25 @@ document.addEventListener("DOMContentLoaded", function() {
         });
     }
 
-    function populateProductDropdowns() {
-        document.querySelectorAll('.productName').forEach(select => {
-            select.innerHTML = '<option value="">اختر منتج</option>';
-            allProductsData.forEach(product => {
-                const option = document.createElement('option');
-                option.value = product.Product_Name_AR;
-                option.textContent = product.Product_Name_AR;
-                option.dataset.code = product.Product_Code;
-                option.dataset.category = product.Category;
-                select.appendChild(option);
-            });
-        });
-    }
-    
-    // Add product entry logic
-    function addProductEntry() {
-        const newEntry = document.createElement('div');
-        newEntry.className = 'product-entry';
-        newEntry.innerHTML = `
+    // Function to create a new product entry
+    function createProductEntry() {
+        const productEntry = document.createElement('div');
+        productEntry.classList.add('product-entry');
+        productEntry.innerHTML = `
             <button type="button" class="remove-product-btn">X</button>
             <div class="form-group">
                 <label>اختر المنتج:</label>
-                <select class="productName" name="productName" required></select>
-                <input type="hidden" class="productCode" name="productCode">
-                <input type="hidden" class="productCategory" name="productCategory"> 
+                <select class="productName" required></select>
+                <input type="hidden" class="productCode">
+                <input type="hidden" class="productCategory">
             </div>
             <div class="form-group">
                 <label>الكمية:</label>
-                <input type="number" class="productQuantity" name="productQuantity" min="1" required>
+                <input type="number" class="productQuantity" min="1" required>
             </div>
             <div class="form-group">
                 <label>الوحدة:</label>
-                <select class="productUnit" name="productUnit" required>
+                <select class="productUnit" required>
                     <option value="">اختر وحدة</option>
                     <option value="كرتون">كرتون</option>
                     <option value="علبة">علبة</option>
@@ -101,135 +111,168 @@ document.addEventListener("DOMContentLoaded", function() {
             </div>
             <div class="form-group">
                 <label>تاريخ الانتهاء:</label>
-                <input type="date" class="productExpiry" name="productExpiry" required>
+                <input type="date" class="productExpiry" required>
             </div>
         `;
-        productsContainer.appendChild(newEntry);
-        populateProductDropdowns();
+
+        const productNameSelect = productEntry.querySelector('.productName');
+        const productCodeInput = productEntry.querySelector('.productCode');
+        const productCategoryInput = productEntry.querySelector('.productCategory');
+
+        // Add default empty option
+        const emptyOption = document.createElement('option');
+        emptyOption.value = '';
+        emptyOption.textContent = 'اختر منتج';
+        productNameSelect.appendChild(emptyOption);
+
+        allProductsData.forEach(product => {
+            const option = document.createElement('option');
+            option.value = product.Product_Name_AR;
+            option.textContent = product.Product_Name_AR;
+            option.dataset.code = product.Product_Code;
+            option.dataset.category = product.Category;
+            productNameSelect.appendChild(option);
+        });
+
+        productNameSelect.addEventListener('change', (e) => {
+            const selectedOption = e.target.options[e.target.selectedIndex];
+            if (selectedOption) {
+                productCodeInput.value = selectedOption.dataset.code || '';
+                productCategoryInput.value = selectedOption.dataset.category || '';
+            }
+        });
+
+        productEntry.querySelector('.remove-product-btn').addEventListener('click', () => {
+            productEntry.remove();
+        });
+
+        return productEntry;
     }
 
-    // Event Listeners
-    addProductBtn.addEventListener('click', addProductEntry);
+    // Add initial product entry
+    if (productsContainer.children.length === 0) {
+        productsContainer.appendChild(createProductEntry());
+    }
 
-    productsContainer.addEventListener('click', function(e) {
-        if (e.target.classList.contains('remove-product-btn')) {
-            e.target.closest('.product-entry').remove();
-        }
+    // Add another product entry on button click
+    addProductBtn.addEventListener('click', () => {
+        productsContainer.appendChild(createProductEntry());
     });
     
-    productsContainer.addEventListener('change', function(e) {
-        if (e.target.classList.contains('productName')) {
-            const selectedOption = e.target.options[e.target.selectedIndex];
-            const productEntry = e.target.closest('.product-entry');
-            const codeInput = productEntry.querySelector('.productCode');
-            const categoryInput = productEntry.querySelector('.productCategory');
-            codeInput.value = selectedOption.dataset.code || '';
-            categoryInput.value = selectedOption.dataset.category || '';
+    // Star rating functionality
+    const starRatingContainer = document.getElementById('storeRating');
+    const ratingValueInput = document.getElementById('ratingValue');
+
+    starRatingContainer.addEventListener('click', (e) => {
+        if (e.target.matches('span')) {
+            const value = e.target.dataset.value;
+            ratingValueInput.value = value;
+            Array.from(starRatingContainer.children).forEach(star => {
+                if (star.dataset.value <= value) {
+                    star.classList.add('active');
+                } else {
+                    star.classList.remove('active');
+                }
+            });
         }
     });
 
-    customerNameInput.addEventListener('input', function() {
-        const selectedOption = customersDatalist.querySelector(`option[value="${this.value}"]`);
-        if (selectedOption) {
-            customerCodeInput.value = selectedOption.dataset.code;
-        } else {
-            customerCodeInput.value = '';
-        }
-    });
-    
-    // Form submission
-    form.addEventListener('submit', function(event) {
+    // Handle form submission
+    form.addEventListener('submit', async (event) => {
         event.preventDefault();
         
         if (isSubmitting) return;
         isSubmitting = true;
         submitBtn.disabled = true;
-
-        statusMessage.textContent = 'جاري إرسال البيانات...';
-        statusMessage.className = 'status loading';
-
-        if ("geolocation" in navigator) {
-            statusMessage.textContent = 'جاري الحصول على الموقع...';
-            statusMessage.className = 'status loading';
-
-            navigator.geolocation.getCurrentPosition(function(position) {
-                submitFormData(position.coords.latitude, position.coords.longitude);
-            }, function(error) {
-                console.error("Error getting location: ", error);
-                submitFormData(null, null);
-            }, {
-                enableHighAccuracy: true,
-                timeout: 5000,
-                maximumAge: 0
-            });
-        } else {
-            submitFormData(null, null);
-        }
-    });
-    
-    function submitFormData(latitude, longitude) {
-        const formData = new FormData(form);
         
-        // Prepare products data
-        const productsData = [];
-        document.querySelectorAll('.product-entry').forEach(entry => {
+        statusMessage.textContent = 'جاري الإرسال...';
+        statusMessage.className = 'status submitting';
+
+        // Collect data from standard form fields
+        const data = {
+            dataEntryName: document.getElementById('dataEntryName').value,
+            salesRepName: document.getElementById('salesRepName').value,
+            governorate: document.getElementById('governorate').value,
+            customerName: customerNameInput.value,
+            customerCode: customerCodeInput.value,
+            visitDate: visitDateInput.value,
+            visitTime: visitTimeInput.value,
+            exitTime: exitTimeInput.value,
+            storeRating: ratingValueInput.value,
+            suggestions: document.getElementById('suggestions').value,
+        };
+
+        // Manually collect data from dynamic product entries
+        const productEntries = productsContainer.querySelectorAll('.product-entry');
+        const products = [];
+        productEntries.forEach(entry => {
             const productName = entry.querySelector('.productName').value;
             if (productName) {
-                productsData.push({
+                products.push({
                     name: productName,
                     code: entry.querySelector('.productCode').value,
                     category: entry.querySelector('.productCategory').value,
                     quantity: entry.querySelector('.productQuantity').value,
                     unit: entry.querySelector('.productUnit').value,
-                    expiry: entry.querySelector('.productExpiry').value
+                    expiry: entry.querySelector('.productExpiry').value,
                 });
             }
         });
+        // Pass products as a stringified JSON object
+        data.products = JSON.stringify(products);
         
-        formData.append('productsData', JSON.stringify(productsData));
-        
-        // Append geolocation data
-        if (latitude && longitude) {
-            formData.append('latitude', latitude);
-            formData.append('longitude', longitude);
+        // Add geolocation data
+        if ("geolocation" in navigator) {
+            try {
+                const position = await new Promise((resolve, reject) => {
+                    navigator.geolocation.getCurrentPosition(resolve, reject, { timeout: 10000 });
+                });
+                data.latitude = position.coords.latitude;
+                data.longitude = position.coords.longitude;
+            } catch (error) {
+                console.error("Geolocation error:", error);
+                data.latitude = "Location not available";
+                data.longitude = "Location not available";
+            }
+        } else {
+            data.latitude = "Geolocation not supported";
+            data.longitude = "Geolocation not supported";
         }
 
-        fetch(SCRIPT_URL, {
-            method: 'POST',
-            body: formData
-        })
-        .then(response => {
-            if (!response.ok) {
-                throw new Error('Network response was not ok');
-            }
-            return response.text();
-        })
-        .then(data => {
-            if (data === "Success") {
+        try {
+            const response = await fetch(SCRIPT_URL, {
+                method: 'POST',
+                body: new URLSearchParams(data),
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded'
+                },
+            });
+
+            const result = await response.text();
+            if (result.includes("Success")) {
                 statusMessage.textContent = '✅ تم إرسال البيانات بنجاح!';
                 statusMessage.className = 'status success';
                 form.reset();
-                customerCodeInput.value = ''; // Clear hidden field
-                // Remove all but the first product entry
-                while (productsContainer.children.length > 1) {
-                    productsContainer.removeChild(productsContainer.lastChild);
-                }
+                customerCodeInput.value = '';
+                ratingValueInput.value = '';
+                Array.from(starRatingContainer.children).forEach(star => star.classList.remove('active'));
+                // Clear dynamic product entries and add one again
+                productsContainer.innerHTML = '';
+                productsContainer.appendChild(createProductEntry());
             } else {
-                statusMessage.textContent = '❌ خطأ في الإرسال: ' + data;
+                statusMessage.textContent = `❌ حدث خطأ: ${result}`;
                 statusMessage.className = 'status error';
             }
-        })
-        .catch(error => {
-            console.error('Error:', error);
-            statusMessage.textContent = '❌ حدث خطأ غير متوقع: ' + error.message;
+        } catch (error) {
+            console.error('Submission error:', error);
+            statusMessage.textContent = '❌ فشل الإرسال. يرجى التحقق من اتصالك بالإنترنت.';
             statusMessage.className = 'status error';
-        })
-        .finally(() => {
+        } finally {
             isSubmitting = false;
             submitBtn.disabled = false;
-        });
-    }
-
+        }
+    });
+    
     // Set today's date and time as default values
     const today = new Date();
     const dateFormatted = today.toISOString().split('T')[0];
