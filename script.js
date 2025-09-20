@@ -60,7 +60,7 @@ document.addEventListener("DOMContentLoaded", () => {
           const select = document.getElementById("salesRepName");
           data.forEach(rep => {
               const option = document.createElement("option");
-              option.value = rep;        // نص مباشر
+              option.value = rep;
               option.textContent = rep;
               select.appendChild(option);
           });
@@ -124,7 +124,7 @@ document.addEventListener("DOMContentLoaded", () => {
       });
 
     // ==========================
-    // إرسال النموذج
+    // إرسال النموذج إلى Google Sheets
     // ==========================
     form.addEventListener("submit", (e) => {
         e.preventDefault();
@@ -141,11 +141,15 @@ document.addEventListener("DOMContentLoaded", () => {
 
             const total = calculateTotal(cartonQty, packetQty, packetsPerCarton);
 
-            return { name, code, category, cartonQty, packetQty, packetsPerCarton, expiryDate, total };
+            return { 
+                name, 
+                code, 
+                category, 
+                quantity: total, 
+                unit: "باكت", 
+                expiry: expiryDate 
+            };
         });
-
-        // دمج المنتجات المتكررة
-        const { merged, notes } = mergeProducts(inventoryItems);
 
         // تجهيز البيانات النهائية
         const formData = {
@@ -158,14 +162,36 @@ document.addEventListener("DOMContentLoaded", () => {
             visitTime: document.getElementById("visitTime").value,
             exitTime: document.getElementById("exitTime").value,
             suggestions: document.getElementById("suggestions").value,
-            inventory: merged,
-            mergeNotes: notes
+            products: JSON.stringify(inventoryItems)
         };
 
-        console.log("📦 البيانات المرسلة:", formData);
+        // رابط Google Apps Script Web App
+        const scriptURL = "ضع هنا رابط الويب آب من Google Apps Script";
 
-        // رسالة نجاح مؤقتة
-        statusMessage.textContent = "✅ تم تجهيز البيانات بنجاح (شوفها في Console)";
-        statusMessage.className = "status success";
+        statusMessage.textContent = "⏳ جاري إرسال البيانات...";
+        statusMessage.className = "status loading";
+
+        fetch(scriptURL, {
+            method: "POST",
+            body: new URLSearchParams(formData)
+        })
+        .then(response => response.text())
+        .then(result => {
+            if (result.includes("Success")) {
+                statusMessage.textContent = "✅ تم إرسال البيانات بنجاح";
+                statusMessage.className = "status success";
+                form.reset();
+                inventoryContainer.innerHTML = "";
+                addInventoryRow();
+            } else {
+                statusMessage.textContent = "⚠️ حدث خطأ: " + result;
+                statusMessage.className = "status error";
+            }
+        })
+        .catch(error => {
+            console.error("Error!", error);
+            statusMessage.textContent = "❌ فشل الإرسال: " + error;
+            statusMessage.className = "status error";
+        });
     });
 });
