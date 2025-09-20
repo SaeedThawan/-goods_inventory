@@ -5,7 +5,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>نموذج تقرير الزيارة</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <link rel="stylesheet" href="style.css">
 </head>
 
@@ -13,6 +12,7 @@
     <div class="container">
         <h1>نموذج تقرير الزيارة</h1>
         <form id="visitForm">
+            <!-- بيانات الموظف والعميل -->
             <div class="form-section">
                 <h2>بيانات الموظف والعميل</h2>
                 <div class="form-group">
@@ -27,7 +27,7 @@
                 </div>
                 <div class="form-group">
                     <label for="governorate">المحافظة:</label>
-                    <select id="governorate" name="governorate" required>
+                    <select id="governorate" name="governorate">
                         <option value="">اختر محافظة</option>
                     </select>
                 </div>
@@ -42,6 +42,7 @@
                 </div>
             </div>
 
+            <!-- بيانات الزيارة -->
             <div class="form-section">
                 <h2>بيانات الزيارة</h2>
                 <div class="form-group">
@@ -58,44 +59,51 @@
                 </div>
             </div>
 
+            <!-- قسم الجرد -->
             <div class="form-section">
-                <h2>جرد المنتجات الناقصة</h2>
-                <div id="missingProductsContainer">
-                    </div>
-                <button type="button" id="addProductBtn" class="btn-add">
+                <h2>قسم الجرد</h2>
+                <div id="inventoryContainer"></div>
+
+                <button type="button" id="addInventoryBtn" class="btn-add">
                     <span>إضافة منتج آخر</span>
-                    <i class="fas fa-plus"></i>
                 </button>
             </div>
 
+            <!-- ملاحظات -->
             <div class="form-section">
                 <h2>الملاحظات</h2>
-                <div class="form-group">
-                    <label for="storeRating">تقييم المتجر:</label>
-                    <div class="star-rating" id="storeRating">
-                        <span data-value="1">&#9733;</span>
-                        <span data-value="2">&#9733;</span>
-                        <span data-value="3">&#9733;</span>
-                        <span data-value="4">&#9733;</span>
-                        <span data-value="5">&#9733;</span>
-                    </div>
-                    <input type="hidden" id="ratingValue" name="storeRating">
-                </div>
                 <div class="form-group">
                     <label for="suggestions">مقترحات/ملاحظات أخرى:</label>
                     <textarea id="suggestions" name="suggestions" rows="4"></textarea>
                 </div>
             </div>
 
+            <!-- زر الإرسال -->
             <button type="submit" id="submitBtn" class="btn-submit">
                 <span>إرسال البيانات</span>
-                <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" fill="currentColor" viewBox="0 0 16 16">
-                    <path d="M15.854 7.646a.5.5 0 0 0 0-.707l-6-6a.5.5 0 0 0-.707.707L14.293 7H1.5a.5.5 0 0 0 0 1h12.793l-5.646 5.646a.5.5 0 0 0 .707.707l6-6a.5.5 0 0 0 0-.707z" />
-                </svg>
             </button>
             <div id="statusMessage" class="status"></div>
         </form>
     </div>
+
+    <!-- قالب صف الجرد -->
+    <template id="inventoryTemplate">
+        <div class="form-group inventory-item">
+            <input type="text" name="productName[]" list="productsList" placeholder="ابحث عن المنتج" required>
+            <input type="hidden" name="productCode[]">
+            <input type="hidden" name="productCategory[]">
+
+            <input type="number" name="cartonQty[]" placeholder="عدد الكراتين" min="0" value="0">
+            <input type="number" name="packetQty[]" placeholder="عدد الباكت" min="0" value="0">
+            <input type="number" name="packetsPerCarton[]" placeholder="الباكت في الكرتون" min="1" value="1">
+
+            <input type="date" name="expiryDate[]">
+
+            <button type="button" class="remove-product-btn">X</button>
+        </div>
+    </template>
+
+    <datalist id="productsList"></datalist>
 
     <script src="script.js"></script>
 </body>
