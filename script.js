@@ -49,19 +49,24 @@ document.addEventListener("DOMContentLoaded", () => {
         return { merged: Object.values(merged), notes };
     }
 
+    // ==========================
     // تحميل بيانات JSON
+    // ==========================
+
+    // تحميل المناديب (مصفوفة نصوص)
     fetch("sales_representatives.json")
       .then(res => res.json())
       .then(data => {
           const select = document.getElementById("salesRepName");
           data.forEach(rep => {
               const option = document.createElement("option");
-              option.value = rep.name;
-              option.textContent = rep.name;
+              option.value = rep;        // نص مباشر
+              option.textContent = rep;
               select.appendChild(option);
           });
       });
 
+    // تحميل المحافظات (مصفوفة نصوص)
     fetch("governorates.json")
       .then(res => res.json())
       .then(data => {
@@ -74,29 +79,93 @@ document.addEventListener("DOMContentLoaded", () => {
           });
       });
 
+    // تحميل العملاء (كائنات: Customer_Name_AR, Customer_Code)
     fetch("customers_main.json")
       .then(res => res.json())
       .then(data => {
           const datalist = document.getElementById("customersList");
           data.forEach(cust => {
               const option = document.createElement("option");
-              option.value = cust.name;
-              option.dataset.code = cust.code;
+              option.value = cust.Customer_Name_AR;
+              option.dataset.code = cust.Customer_Code;
               datalist.appendChild(option);
           });
 
           document.getElementById("customerNameInput").addEventListener("input", (e) => {
-              const selected = data.find(c => c.name === e.target.value);
-              document.getElementById("customerCode").value = selected ? selected.code : "";
+              const selected = data.find(c => c.Customer_Name_AR === e.target.value);
+              document.getElementById("customerCode").value = selected ? selected.Customer_Code : "";
           });
       });
 
+    // تحميل المنتجات (كائنات: Product_Code, Product_Name_AR, Category)
     fetch("products.json")
       .then(res => res.json())
       .then(data => {
           const datalist = document.getElementById("productsList");
           data.forEach(prod => {
               const option = document.createElement("option");
-              option.value = prod.name;
-              option.dataset.code = prod.code;
-              option.dataset.category
+              option.value = prod.Product_Name_AR;
+              option.dataset.code = prod.Product_Code;
+              option.dataset.category = prod.Category;
+              datalist.appendChild(option);
+          });
+
+          // عند اختيار منتج → نخزن الكود والفئة
+          document.addEventListener("input", (e) => {
+              if (e.target && e.target.getAttribute("list") === "productsList") {
+                  const selected = data.find(p => p.Product_Name_AR === e.target.value);
+                  if (selected) {
+                      const parent = e.target.closest(".inventory-item");
+                      parent.querySelector('input[name="productCode[]"]').value = selected.Product_Code;
+                      parent.querySelector('input[name="productCategory[]"]').value = selected.Category;
+                  }
+              }
+          });
+      });
+
+    // ==========================
+    // إرسال النموذج
+    // ==========================
+    form.addEventListener("submit", (e) => {
+        e.preventDefault();
+
+        // جمع بيانات الجرد
+        const inventoryItems = Array.from(document.querySelectorAll(".inventory-item")).map(item => {
+            const name = item.querySelector('input[list="productsList"]').value;
+            const code = item.querySelector('input[name="productCode[]"]').value;
+            const category = item.querySelector('input[name="productCategory[]"]').value;
+            const cartonQty = parseInt(item.querySelector('input[name="cartonQty[]"]').value) || 0;
+            const packetQty = parseInt(item.querySelector('input[name="packetQty[]"]').value) || 0;
+            const packetsPerCarton = parseInt(item.querySelector('input[name="packetsPerCarton[]"]').value) || 1;
+            const expiryDate = item.querySelector('input[name="expiryDate[]"]').value;
+
+            const total = calculateTotal(cartonQty, packetQty, packetsPerCarton);
+
+            return { name, code, category, cartonQty, packetQty, packetsPerCarton, expiryDate, total };
+        });
+
+        // دمج المنتجات المتكررة
+        const { merged, notes } = mergeProducts(inventoryItems);
+
+        // تجهيز البيانات النهائية
+        const formData = {
+            dataEntryName: document.getElementById("dataEntryName").value,
+            salesRepName: document.getElementById("salesRepName").value,
+            governorate: document.getElementById("governorate").value,
+            customerName: document.getElementById("customerNameInput").value,
+            customerCode: document.getElementById("customerCode").value,
+            visitDate: document.getElementById("visitDate").value,
+            visitTime: document.getElementById("visitTime").value,
+            exitTime: document.getElementById("exitTime").value,
+            suggestions: document.getElementById("suggestions").value,
+            inventory: merged,
+            mergeNotes: notes
+        };
+
+        console.log("📦 البيانات المرسلة:", formData);
+
+        // رسالة نجاح مؤقتة
+        statusMessage.textContent = "✅ تم تجهيز البيانات بنجاح (شوفها في Console)";
+        statusMessage.className = "status success";
+    });
+});
