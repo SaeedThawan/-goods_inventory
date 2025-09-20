@@ -35,11 +35,10 @@ document.addEventListener("DOMContentLoaded", () => {
         const notes = [];
 
         products.forEach(p => {
-            const key = p.code || p.name; // المفتاح = الكود أو الاسم
+            const key = p.code || p.name;
             if (!merged[key]) {
                 merged[key] = { ...p };
             } else {
-                // دمج الكميات
                 merged[key].cartonQty += p.cartonQty;
                 merged[key].packetQty += p.packetQty;
                 merged[key].total += p.total;
@@ -50,108 +49,54 @@ document.addEventListener("DOMContentLoaded", () => {
         return { merged: Object.values(merged), notes };
     }
 
-    // إرسال النموذج
-    form.addEventListener("submit", async (e) => {
-        e.preventDefault();
+    // تحميل بيانات JSON
+    fetch("sales_representatives.json")
+      .then(res => res.json())
+      .then(data => {
+          const select = document.getElementById("salesRepName");
+          data.forEach(rep => {
+              const option = document.createElement("option");
+              option.value = rep.name;
+              option.textContent = rep.name;
+              select.appendChild(option);
+          });
+      });
 
-        statusMessage.textContent = "جاري الإرسال...";
-        statusMessage.className = "status loading";
+    fetch("governorates.json")
+      .then(res => res.json())
+      .then(data => {
+          const select = document.getElementById("governorate");
+          data.forEach(gov => {
+              const option = document.createElement("option");
+              option.value = gov;
+              option.textContent = gov;
+              select.appendChild(option);
+          });
+      });
 
-        // جمع بيانات الجرد
-        const items = [...inventoryContainer.querySelectorAll(".inventory-item")];
-        if (items.length === 0) {
-            statusMessage.textContent = "❌ يجب إضافة منتج واحد على الأقل";
-            statusMessage.className = "status error";
-            return;
-        }
+    fetch("customers_main.json")
+      .then(res => res.json())
+      .then(data => {
+          const datalist = document.getElementById("customersList");
+          data.forEach(cust => {
+              const option = document.createElement("option");
+              option.value = cust.name;
+              option.dataset.code = cust.code;
+              datalist.appendChild(option);
+          });
 
-        const products = [];
-        let valid = true;
+          document.getElementById("customerNameInput").addEventListener("input", (e) => {
+              const selected = data.find(c => c.name === e.target.value);
+              document.getElementById("customerCode").value = selected ? selected.code : "";
+          });
+      });
 
-        items.forEach(item => {
-            const name = item.querySelector('input[name="productName[]"]').value.trim();
-            const code = item.querySelector('input[name="productCode[]"]').value.trim();
-            const category = item.querySelector('input[name="productCategory[]"]').value.trim();
-            const cartonQty = parseInt(item.querySelector('input[name="cartonQty[]"]').value) || 0;
-            const packetQty = parseInt(item.querySelector('input[name="packetQty[]"]').value) || 0;
-            const packetsPerCarton = parseInt(item.querySelector('input[name="packetsPerCarton[]"]').value) || 1;
-            const expiryDate = item.querySelector('input[name="expiryDate[]"]').value;
-
-            if (!name) {
-                valid = false;
-                return;
-            }
-
-            const total = calculateTotal(cartonQty, packetQty, packetsPerCarton);
-
-            if (total === 0) {
-                valid = false;
-                return;
-            }
-
-            products.push({
-                name,
-                code,
-                category,
-                cartonQty,
-                packetQty,
-                packetsPerCarton,
-                expiryDate,
-                total
-            });
-        });
-
-        if (!valid) {
-            statusMessage.textContent = "❌ تأكد من إدخال اسم المنتج والكمية بشكل صحيح";
-            statusMessage.className = "status error";
-            return;
-        }
-
-        // دمج المنتجات المتكررة
-        const { merged, notes } = mergeProducts(products);
-
-        // جمع باقي بيانات النموذج
-        const formData = {
-            dataEntryName: document.getElementById("dataEntryName").value,
-            salesRepName: document.getElementById("salesRepName").value,
-            governorate: document.getElementById("governorate").value,
-            customerName: document.getElementById("customerNameInput").value,
-            customerCode: document.getElementById("customerCode").value,
-            visitDate: document.getElementById("visitDate").value,
-            visitTime: document.getElementById("visitTime").value,
-            exitTime: document.getElementById("exitTime").value,
-            suggestions: document.getElementById("suggestions").value,
-            products: merged
-        };
-
-        try {
-            // هنا تضع رابط Google Apps Script أو API
-            // const response = await fetch("YOUR_SCRIPT_URL", {
-            //     method: "POST",
-            //     body: JSON.stringify(formData),
-            //     headers: { "Content-Type": "application/json" }
-            // });
-
-            // const result = await response.json();
-
-            // محاكاة نجاح الإرسال
-            await new Promise(res => setTimeout(res, 1000));
-
-            statusMessage.textContent = "✅ تم إرسال التقرير بنجاح";
-            statusMessage.className = "status success";
-
-            if (notes.length > 0) {
-                alert(notes.join("\n"));
-            }
-
-            form.reset();
-            inventoryContainer.innerHTML = "";
-            addInventoryRow();
-
-        } catch (error) {
-            console.error(error);
-            statusMessage.textContent = "❌ حدث خطأ أثناء الإرسال";
-            statusMessage.className = "status error";
-        }
-    });
-});
+    fetch("products.json")
+      .then(res => res.json())
+      .then(data => {
+          const datalist = document.getElementById("productsList");
+          data.forEach(prod => {
+              const option = document.createElement("option");
+              option.value = prod.name;
+              option.dataset.code = prod.code;
+              option.dataset.category
