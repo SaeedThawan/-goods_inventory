@@ -165,8 +165,9 @@ document.addEventListener("DOMContentLoaded", () => {
             products: JSON.stringify(inventoryItems)
         };
 
-        // رابط Google Apps Script Web App
+        // رابط Google Apps Script Web App (تم استبداله بالرابط الصحيح)
         const scriptURL = "https://script.google.com/macros/s/AKfycbzkdZ5k6EChKCDiNxKWXH6QjB4tZX7xX-T1Nn7hDNSRA_NI_KsXA7IF1Rpjq09Ow249zw/exec";
+
         statusMessage.textContent = "⏳ جاري إرسال البيانات...";
         statusMessage.className = "status loading";
 
