@@ -9,7 +9,6 @@
     --border-color: #dee2e6;
     --success-color: #28a745;
     --error-color: #dc3545;
-    --rating-color: #ffc107;
 }
 
 .hidden {
@@ -86,43 +85,7 @@ textarea::placeholder {
     color: #adb5bd;
 }
 
-.checkbox-group {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 10px;
-    margin-top: 10px;
-}
-
-.checkbox-group label {
-    font-weight: normal;
-    background-color: #f1f3f5;
-    padding: 10px 15px;
-    border-radius: 20px;
-    cursor: pointer;
-    transition: background-color 0.3s;
-    user-select: none;
-}
-
-.checkbox-group label:hover {
-    background-color: #e9ecef;
-}
-
-.checkbox-group input[type="checkbox"] {
-    display: none;
-}
-
-.checkbox-group input[type="checkbox"]:checked + span {
-    background-color: var(--primary-color);
-    color: #fff;
-    border-color: var(--primary-color);
-    padding: 10px 15px;
-    border-radius: 20px;
-}
-
-.checkbox-group label span {
-    display: inline-block;
-}
-
+/* قسم تفاصيل العميل */
 #customerDetails {
     background-color: #e9ecef;
     border-radius: 8px;
@@ -132,14 +95,15 @@ textarea::placeholder {
     line-height: 1.6;
 }
 
-#missingProductsContainer {
+/* قسم الجرد */
+#inventoryContainer {
     border: 1px dashed var(--border-color);
     border-radius: 8px;
     padding: 15px;
     margin-top: 15px;
 }
 
-.missing-product-item {
+.inventory-item {
     display: flex;
     align-items: flex-end;
     gap: 10px;
@@ -148,18 +112,14 @@ textarea::placeholder {
     padding-bottom: 15px;
 }
 
-.missing-product-item:last-child {
+.inventory-item:last-child {
     border-bottom: none;
     margin-bottom: 0;
     padding-bottom: 0;
 }
 
-.missing-product-item label {
+.inventory-item label {
     margin-bottom: 0;
-}
-
-.missing-product-item select {
-    flex-grow: 1;
 }
 
 .remove-product-btn {
@@ -180,13 +140,13 @@ textarea::placeholder {
     background-color: #c82333;
 }
 
-/* Updated Add Button */
+/* زر إضافة منتج */
 .btn-add {
     display: flex;
     align-items: center;
     justify-content: center;
     gap: 8px;
-    background-color: #007bff;
+    background-color: var(--primary-color);
     color: #fff;
     border: none;
     padding: 12px 20px;
@@ -204,32 +164,7 @@ textarea::placeholder {
     box-shadow: 0 4px 10px rgba(0, 123, 255, 0.2);
 }
 
-
-.star-rating {
-    display: flex;
-    flex-direction: row-reverse;
-    justify-content: flex-end;
-    font-size: 2.2rem;
-    cursor: pointer;
-}
-
-.star-rating > span {
-    padding: 0 4px;
-    color: #adb5bd;
-    transition: color 0.2s;
-}
-
-.star-rating > span:hover,
-.star-rating > span:hover ~ span {
-    color: var(--rating-color);
-}
-
-.star-rating > span.active,
-.star-rating > span.active ~ span {
-    color: var(--rating-color);
-}
-
-/* Updated Submit Button */
+/* زر الإرسال */
 .btn-submit {
     display: flex;
     align-items: center;
@@ -260,6 +195,7 @@ textarea::placeholder {
     box-shadow: none;
 }
 
+/* رسائل الحالة */
 .status {
     text-align: center;
     padding: 15px;
@@ -283,6 +219,7 @@ textarea::placeholder {
     color: var(--error-color);
 }
 
+/* تجاوب مع الشاشات الصغيرة */
 @media (max-width: 600px) {
     .container {
         margin: 20px 10px;
@@ -293,7 +230,7 @@ textarea::placeholder {
         font-size: 24px;
     }
 
-    .missing-product-item {
+    .inventory-item {
         flex-direction: column;
         align-items: stretch;
     }
