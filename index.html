@@ -1,111 +1,69 @@
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
-
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>نموذج تقرير الزيارة</title>
-    <link rel="stylesheet" href="style.css">
+  <meta charset="UTF-8">
+  <title>نموذج الزيارات الميدانية</title>
+  <style>
+    body { font-family: Tahoma, Arial, sans-serif; background:#f9f9f9; padding:20px; }
+    form { background:#fff; padding:20px; border-radius:8px; max-width:900px; margin:auto; }
+    h2, h3 { margin-top:0; }
+    input, select, textarea, button {
+      margin:5px 0; padding:8px; font-size:14px;
+    }
+    input[readonly] { background:#eee; }
+    .inventory-item { display:flex; flex-wrap:wrap; gap:8px; margin-bottom:10px; padding:10px; border:1px solid #ddd; border-radius:6px; background:#fafafa; }
+    .inventory-item input { flex:1; min-width:120px; }
+    .remove-product-btn { background:#e74c3c; color:#fff; border:none; padding:6px 10px; border-radius:4px; cursor:pointer; }
+    #addInventoryBtn { background:#3498db; color:#fff; border:none; padding:8px 12px; border-radius:4px; cursor:pointer; margin-top:10px; }
+    button[type="submit"] { background:#27ae60; color:#fff; border:none; padding:10px 16px; border-radius:4px; cursor:pointer; margin-top:15px; }
+    #statusMessage { margin-top:15px; font-weight:bold; }
+    .status.success { color:green; }
+    .status.error { color:red; }
+    .status.loading { color:orange; }
+  </style>
 </head>
-
 <body>
-    <div class="container">
-        <h1>نموذج تقرير الزيارة</h1>
-        <form id="visitForm">
-            <!-- بيانات الموظف والعميل -->
-            <div class="form-section">
-                <h2>بيانات الموظف والعميل</h2>
-                <div class="form-group">
-                    <label for="dataEntryName">اسم مدخل البيانات:</label>
-                    <input type="text" id="dataEntryName" name="dataEntryName" required>
-                </div>
-                <div class="form-group">
-                    <label for="salesRepName">اسم المروج:</label>
-                    <select id="salesRepName" name="salesRepName" required>
-                        <option value="">اختر مروج</option>
-                    </select>
-                </div>
-                <div class="form-group">
-                    <label for="governorate">المحافظة:</label>
-                    <select id="governorate" name="governorate">
-                        <option value="">اختر محافظة</option>
-                    </select>
-                </div>
-                <div class="form-group">
-                    <label for="customerNameInput">اسم العميل:</label>
-                    <input type="text" id="customerNameInput" name="customerName" list="customersList" required>
-                    <datalist id="customersList"></datalist>
-                </div>
-                <div class="form-group hidden">
-                    <label for="customerCode">كود العميل:</label>
-                    <input type="text" id="customerCode" name="customerCode" readonly>
-                </div>
-            </div>
+  <form id="visitForm">
+    <h2>📋 بيانات الزيارة</h2>
+    <input type="text" id="dataEntryName" placeholder="👤 اسم مدخل البيانات" required>
+    <select id="salesRepName" required>
+      <option value="">👨‍💼 اختر المندوب</option>
+    </select>
+    <select id="governorate" required>
+      <option value="">🌍 اختر المحافظة</option>
+    </select>
+    <input list="customersList" id="customerNameInput" placeholder="🏪 اسم العميل" required>
+    <input type="text" id="customerCode" placeholder="🔢 كود العميل" readonly>
+    <datalist id="customersList"></datalist>
 
-            <!-- بيانات الزيارة -->
-            <div class="form-section">
-                <h2>بيانات الزيارة</h2>
-                <div class="form-group">
-                    <label for="visitDate">تاريخ الزيارة:</label>
-                    <input type="date" id="visitDate" name="visitDate" required>
-                </div>
-                <div class="form-group">
-                    <label for="visitTime">وقت الدخول:</label>
-                    <input type="time" id="visitTime" name="visitTime" required>
-                </div>
-                <div class="form-group">
-                    <label for="exitTime">وقت الخروج:</label>
-                    <input type="time" id="exitTime" name="exitTime" required>
-                </div>
-            </div>
+    <input type="date" id="visitDate" required>
+    <input type="time" id="visitTime" required>
+    <input type="time" id="exitTime" required>
+    <textarea id="suggestions" placeholder="📝 ملاحظات أو اقتراحات"></textarea>
 
-            <!-- قسم الجرد -->
-            <div class="form-section">
-                <h2>قسم الجرد</h2>
-                <div id="inventoryContainer"></div>
+    <h3>📦 قسم الجرد</h3>
+    <div id="inventoryContainer"></div>
+    <button type="button" id="addInventoryBtn">➕ إضافة منتج</button>
 
-                <button type="button" id="addInventoryBtn" class="btn-add">
-                    <span>إضافة منتج آخر</span>
-                </button>
-            </div>
+    <button type="submit">🚀 إرسال البيانات</button>
+    <div id="statusMessage"></div>
+  </form>
 
-            <!-- ملاحظات -->
-            <div class="form-section">
-                <h2>الملاحظات</h2>
-                <div class="form-group">
-                    <label for="suggestions">مقترحات/ملاحظات أخرى:</label>
-                    <textarea id="suggestions" name="suggestions" rows="4"></textarea>
-                </div>
-            </div>
-
-            <!-- زر الإرسال -->
-            <button type="submit" id="submitBtn" class="btn-submit">
-                <span>إرسال البيانات</span>
-            </button>
-            <div id="statusMessage" class="status"></div>
-        </form>
+  <!-- قالب صف الجرد -->
+  <template id="inventoryTemplate">
+    <div class="inventory-item">
+      <input list="productsList" placeholder="اختر المنتج" required>
+      <input type="text" name="productCode[]" placeholder="كود المنتج" readonly>
+      <input type="text" name="productCategory[]" placeholder="الفئة" readonly>
+      <input type="number" name="packetsPerCarton[]" placeholder="عدد الباكت/كرتون" readonly>
+      <input type="number" name="cartonQty[]" placeholder="عدد الكراتين">
+      <input type="number" name="packetQty[]" placeholder="عدد الباكت المفردة">
+      <input type="date" name="expiryDate[]" placeholder="تاريخ الصلاحية">
+      <button type="button" class="remove-product-btn">❌</button>
     </div>
+  </template>
 
-    <!-- قالب صف الجرد -->
-    <template id="inventoryTemplate">
-        <div class="form-group inventory-item">
-            <input type="text" name="productName[]" list="productsList" placeholder="ابحث عن المنتج" required>
-            <input type="hidden" name="productCode[]">
-            <input type="hidden" name="productCategory[]">
-
-            <input type="number" name="cartonQty[]" placeholder="عدد الكراتين" min="0" value="0">
-            <input type="number" name="packetQty[]" placeholder="عدد الباكت" min="0" value="0">
-            <input type="number" name="packetsPerCarton[]" placeholder="الباكت في الكرتون" min="1" value="1">
-
-            <input type="date" name="expiryDate[]">
-
-            <button type="button" class="remove-product-btn">X</button>
-        </div>
-    </template>
-
-    <datalist id="productsList"></datalist>
-
-    <script src="script.js"></script>
+  <datalist id="productsList"></datalist>
+  <script src="script.js"></script>
 </body>
-
 </html>
