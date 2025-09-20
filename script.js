@@ -4,6 +4,7 @@ document.addEventListener("DOMContentLoaded", () => {
     const inventoryContainer = document.getElementById("inventoryContainer");
     const inventoryTemplate = document.getElementById("inventoryTemplate");
     const statusMessage = document.getElementById("statusMessage");
+    const submitBtn = document.getElementById("submitBtn");
 
     // إضافة صف جرد جديد
     function addInventoryRow() {
@@ -95,10 +96,17 @@ document.addEventListener("DOMContentLoaded", () => {
           });
       });
 
-    // إرسال النموذج
+    // ==========================
+    // إرسال النموذج إلى Google Sheets
+    // ==========================
     form.addEventListener("submit", (e) => {
         e.preventDefault();
 
+        // منع الإرسال المتكرر
+        submitBtn.disabled = true;
+        submitBtn.textContent = "⏳ جاري الإرسال...";
+
+        // جمع بيانات الجرد
         const inventoryItems = Array.from(document.querySelectorAll(".inventory-item")).map(item => {
             const name = item.querySelector('input[list="productsList"]').value;
             const code = item.querySelector('input[name="productCode[]"]').value;
@@ -111,6 +119,7 @@ document.addEventListener("DOMContentLoaded", () => {
             return { name, code, category, quantity: total, unit: "باكت", expiry: expiryDate };
         });
 
+        // تجهيز البيانات النهائية
         const formData = {
             dataEntryName: document.getElementById("dataEntryName").value,
             salesRepName: document.getElementById("salesRepName").value,
@@ -124,6 +133,7 @@ document.addEventListener("DOMContentLoaded", () => {
             products: JSON.stringify(inventoryItems)
         };
 
+        // رابط Google Apps Script Web App
         const scriptURL = "https://script.google.com/macros/s/AKfycbzkdZ5k6EChKCDiNxKWXH6QjB4tZX7xX-T1Nn7hDNSRA_NI_KsXA7IF1Rpjq09Ow249zw/exec";
 
         statusMessage.textContent = "⏳ جاري إرسال البيانات...";
@@ -150,6 +160,10 @@ document.addEventListener("DOMContentLoaded", () => {
             console.error("Error!", error);
             statusMessage.textContent = "❌ فشل الإرسال: " + error;
             statusMessage.className = "status error";
+        })
+        .finally(() => {
+            submitBtn.disabled = false;
+            submitBtn.textContent = "🚀 إرسال البيانات";
         });
     });
 });
