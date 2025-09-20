@@ -1,9 +1,9 @@
 /* 🌐 إعدادات عامة */
 body {
-  font-family: "Tahoma", Arial, sans-serif;
-  background: linear-gradient(135deg, #f0f4f8, #e6ebf1);
+  font-family: "Cairo", Tahoma, Arial, sans-serif;
+  background: linear-gradient(135deg, #eef2f7, #dfe6ed);
   margin: 0;
-  padding: 20px;
+  padding: 15px;
   direction: rtl;
   color: #2c3e50;
 }
@@ -13,8 +13,8 @@ body {
   margin: auto;
   background: #fff;
   padding: 25px 30px;
-  border-radius: 12px;
-  box-shadow: 0 6px 18px rgba(0,0,0,0.1);
+  border-radius: 14px;
+  box-shadow: 0 6px 18px rgba(0,0,0,0.08);
   animation: fadeIn 0.6s ease-in-out;
 }
 
@@ -25,22 +25,23 @@ body {
 
 h1 {
   text-align: center;
-  color: #34495e;
+  color: #2c3e50;
   margin-bottom: 25px;
   font-size: 26px;
+  font-weight: bold;
 }
 
 h2 {
   font-size: 18px;
   margin-bottom: 12px;
-  color: #2c3e50;
+  color: #34495e;
   border-right: 4px solid #3498db;
   padding-right: 8px;
 }
 
 /* 📝 أقسام النموذج */
 .form-section {
-  border: 1px solid #ddd;
+  border: 1px solid #e0e0e0;
   padding: 18px;
   border-radius: 10px;
   background: #fafafa;
@@ -86,6 +87,13 @@ input[readonly] {
 textarea {
   resize: vertical;
   min-height: 80px;
+}
+
+/* 🔍 تحسين البحث */
+input[list] {
+  background: url('data:image/svg+xml;utf8,<svg fill="%23999" height="18" viewBox="0 0 24 24" width="18" xmlns="http://www.w3.org/2000/svg"><path d="M15.5 14h-.79l-.28-.27..."/></svg>') no-repeat left 10px center;
+  background-size: 18px;
+  padding-left: 35px;
 }
 
 /* 📦 قسم الجرد */
@@ -166,14 +174,20 @@ button:disabled {
   text-align: center;
 }
 
-.status.success {
-  color: #27ae60;
-}
+.status.success { color: #27ae60; }
+.status.error { color: #e74c3c; }
+.status.loading { color: #f39c12; }
 
-.status.error {
-  color: #e74c3c;
-}
-
-.status.loading {
-  color: #f39c12;
+/* 📱 دعم الهواتف */
+@media (max-width: 768px) {
+  .inventory-item {
+    flex-direction: column;
+  }
+  input, select, textarea, button {
+    width: 100%;
+  }
+  .remove-product-btn {
+    width: 100%;
+    margin-top: 8px;
+  }
 }
